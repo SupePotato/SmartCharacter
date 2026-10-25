@@ -1,5 +1,7 @@
 import { resolveAiAnalysis } from "../lib/ai-fragment-protocol.ts";
 import { failureDiagnostic } from "./ai-failure-diagnostics.mjs";
+import { resolveAiCapabilities, aiRequestPolicy } from "./ai-model-options.mjs";
+import { requestAiChat } from "./ai-chat-adapter.mjs";
 /** Only a user-initiated short sample is sent here; no full-project analysis. */
 export function normalizeConnection(input, { allowLoopback = false } = {}) {
   if (!input || typeof input !== "object" || Object.keys(input).some(k => !["baseUrl", "apiKey", "model"].includes(k))) throw new Error("连接字段无效");
@@ -22,7 +24,7 @@ export function validateConnectionSample(value) {
   if(checked.review.skippedFocus.length||checked.review.unreviewedCueIds.length||!checked.result.focus.length)throw new Error("模型未返回兼容的语义建议格式");
   return checked.result;
 }
-export function createAiConnectionService({ store, fetchImpl = fetch, timeoutMs = 15000, allowLoopback = false }) {
+export function createAiConnectionService({ store, fetchImpl = fetch, timeoutMs, allowLoopback = false }) {
   let revision = 0, active, diagnostic;
   return {
     async info() { return connectionInfo(await store.get()); },
@@ -30,32 +32,22 @@ export function createAiConnectionService({ store, fetchImpl = fetch, timeoutMs 
     close() { revision++; active?.abort(); diagnostic=undefined; },
     async testAndSave(input, signal) {
       const candidate = normalizeConnection(input, { allowLoopback });
+      const capabilities = resolveAiCapabilities(candidate);
       const current = ++revision;
       diagnostic=undefined;
       active?.abort(); active = new AbortController();
-      const abort = AbortSignal.any([active.signal, signal || new AbortController().signal, AbortSignal.timeout(timeoutMs)]);
+      const abort = AbortSignal.any([active.signal, signal || new AbortController().signal, AbortSignal.timeout(timeoutMs ?? aiRequestPolicy(capabilities, "connection").timeoutMs)]);
       let context;
       try {
-        const response = await fetchImpl(`${candidate.baseUrl}/chat/completions`, {
-          method: "POST", redirect: "error", signal: abort,
-          headers: { "Content-Type": "application/json", Authorization: `Bearer ${candidate.apiKey}` },
-          body: JSON.stringify({ model: candidate.model, ...(candidate.model === "deepseek-flash" ? { thinking: { type: "disabled" } } : {}), stream: false, max_tokens: 512, messages: [
+        const envelope = await requestAiChat({ connection: candidate, capabilities, kind: "connection", signal: abort, fetchImpl, messages: [
             { role: "system", content: '只返回 JSON，不改写原文。格式：{"protocolVersion":5,"decisions":[{"cueId":"sample-1","decision":"focus","reason":"观点重点"}],"focus":[{"ranges":[{"cueId":"sample-1","text":"问题","role":"topic","priority":1,"granularity":"word"}],"relations":["emphasis"],"reason":"简短理由"}],"sections":[],"outlines":[],"cards":[]}。重点必须逐字等于原文中的连续片段；重复出现时可增加 occurrence 整数，从1开始指定第几处。不要输出 originalText、start、end 或 indexUnit；位置由本机计算，不添加其他字段。' },
             { role: "user", content: JSON.stringify({ id: "sample-1", text: SAMPLE }) },
-          ] }),
-        });
-        if (!response.ok) throw new Error(`连接测试失败（HTTP ${response.status}），请检查地址、密钥、模型和额度。`);
-        if (Number(response.headers.get("content-length")) > 65536) throw new Error("模型测试响应过大");
-        const reader = response.body.getReader(); let bytes = 0, chunks = [];
-        try {
-          for (;;) { const { value, done } = await reader.read(); if (done) break; bytes += value.byteLength; if (bytes > 65536) throw new Error("模型测试响应过大"); chunks.push(value); }
-        } finally { await reader.cancel().catch(() => {}); }
-        const payload = JSON.parse(Buffer.concat(chunks).toString("utf8"));
-        const choice=payload.choices?.[0];
-        context={kind:"connection",cues:[{id:"sample-1",text:SAMPLE,start:0,end:2}],content:choice?.message?.content,finishReason:choice?.finish_reason,usage:payload.usage};
+          ] });
+        const choice = { finish_reason: envelope.finishReason, message: { content: envelope.content } };
+        context={kind:"connection",cues:[{id:"sample-1",text:SAMPLE,start:0,end:2}],content:envelope.content,finishReason:envelope.finishReason,usage:envelope.usage};
         if(choice?.finish_reason!=="stop")throw new Error("模型测试响应未完整结束");
         if(typeof choice.message.content==="string"&&choice.message.content.includes(candidate.apiKey))throw new Error("模型测试响应包含敏感连接信息");
-        validateConnectionSample(payload.choices?.[0]?.message?.content);
+        validateConnectionSample(envelope.content);
         abort.throwIfAborted();
         if (current !== revision) throw new Error("连接测试已过期，请重新测试");
         const saved = await store.save(candidate, abort);

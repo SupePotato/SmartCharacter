@@ -1,0 +1,23 @@
+{
+  "version": 1,
+  "remoteProtocol": 3,
+  "kind": "connection",
+  "recordedAt": "2026-10-25T06:53:30.475Z",
+  "batch": 1,
+  "message": "Unexpected token '`', \"```json\n{\"\"... is not valid JSON",
+  "finishReason": "stop",
+  "usage": {
+    "promptTokens": 159,
+    "completionTokens": 83,
+    "reasoningTokens": 1
+  },
+  "subtitles": [
+    {
+      "id": "sample-1",
+      "text": "先说清楚问题",
+      "start": 0,
+      "end": 2
+    }
+  ],
+  "response": "```json\n{\"protocolVersion\":5,\"decisions\":[{\"cueId\":\"sample-1\",\"decision\":\"focus\",\"reason\":\"观点重点\"}],\"focus\":[{\"ranges\":[{\"cueId\":\"sample-1\",\"text\":\"问题\",\"role\":\"topic\",\"priority\":1,\"granularity\":\"word\"}],\"relations\":[\"emphasis\"],\"reason\":\"核心议题\"}],\"sections\":[],\"outlines\":[],\"cards\":[]}\n```"
+}
