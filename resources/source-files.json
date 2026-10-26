@@ -843,7 +843,7 @@
     "scripts/ai-model-options.mjs": "e7486582a7ea16e76ddef132126630f40f10e0dce5fce2854677d6118f67221a",
     "scripts/align_words.py": "db9066f9065a1473ccf0a872d8737e8b64f3251fa29964f7c6e033471465f4a4",
     "scripts/analyze_faces.py": "1a5ae048c9172da2a794641a2d5bf706a83886e406d4dbd93b598ffd9f50357f",
-    "scripts/assemble-local-web.mjs": "a2e662488a68d3dbd9ebfde0e6c3286faf0119f41c95b9fcb1c958097dc7cec4",
+    "scripts/assemble-local-web.mjs": "5c07dd089150f2b7b94ba69a1b254e347d7c2bd5382c571f95e30df19df56371",
     "scripts/bootstrap-local-web.ps1": "bf698dc8ef4fbf4a62b61e3559ba15ff72982f8394902ee58f1e72ce344e8dc9",
     "scripts/bootstrap-local-web.sh": "c32e8f11dcbf2de6db5b5b81214570f5562c2d08c604e965f9f0311e7b2b99f0",
     "scripts/build-face-detector.mjs": "118a930209cf2d55e2fa52d9a18fa73779d93d460f80b12fefedac8bb16d0aa0",

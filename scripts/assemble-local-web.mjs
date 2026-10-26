@@ -66,7 +66,13 @@ export async function assembleDelivery() {
  for(const name of [...Object.keys(files),'resources/source-files.json']){const d=join(source,name);await mkdir(resolve(d,'..'),{recursive:true});await cp(join(root,name),d);}
  const lock=JSON.parse(await readFile(join(root,'resources/component-bundles.json'),'utf8')),nodes=JSON.parse(await readFile(join(root,'resources/node-bootstrap-lock.json'),'utf8')),entries=[];
  for(const target of Object.keys(lock.targets)) {
-  const dest=join(delivery,`SC-${target}`);await rm(dest,{recursive:true,force:true});await cp(source,dest,{recursive:true});await mkdir(join(dest,'bundles'));
+  const dest=join(delivery,`SC-${target}`);await rm(dest,{recursive:true,force:true});await mkdir(dest,{recursive:true});
+  // Platform packages and their install manifests must contain the same entry files.
+  const excludedEntryExtension=target.startsWith('darwin-')?'.cmd':'.command';
+  const targetFiles=Object.fromEntries(Object.entries(files).filter(([name])=>!name.endsWith(excludedEntryExtension)));
+  for(const name of Object.keys(targetFiles)){const d=join(dest,name);await mkdir(resolve(d,'..'),{recursive:true});await cp(join(source,name),d);}
+  await writeFile(join(dest,'resources/source-files.json'),JSON.stringify({schemaVersion:1,files:targetFiles},null,2)+'\n');
+  await mkdir(join(dest,'bundles'));
   for(const [from,name] of [[join(root,'bundles',lock.targets[target].file),lock.targets[target].file],[join(root,'.runtime-cache/downloads',nodes.targets[target].file),nodes.targets[target].file]])await cp(from,join(dest,'bundles',name));
   const archive=`SC-${target}.zip`;zipDelivery(dest,join(delivery,archive));entries.push({target,file:archive,sha256:await resourceSha256(join(delivery,archive)),executionAcceptance:'见三平台实机验收表'});
  }
