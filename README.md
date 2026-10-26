@@ -16,6 +16,12 @@
 >
 > 已有对应字幕的情况下测得，不包含人工制作卡片和视频导出。实际耗时会随字幕内容、AI 服务和网络情况变化。
 
+## 本次更新
+
+- **AI 适配更新**：支持主流文本模型官方 API 和火山方舟文本模型，第三方中转站暂不兼容。
+- **安装入口更清楚**：Mac 包只保留 `.command` 安装和启动入口，Windows 包只保留 `.cmd` 入口。
+- **三平台手册更新**：苹果芯片 Mac、Intel Mac 和 Windows 均提供新版 PDF，包含 AI 配置、安装步骤与导出文件查找方法。
+
 ## 功能介绍
 
 | 功能 | 你可以做什么 |
@@ -58,6 +64,22 @@
 
 两种方式都能进入编辑台继续调整，也都可以手动选词和制作卡片。
 
+### 连接 AI：使用官方 API
+
+目前已支持**主流文本模型的官方 API，以及火山方舟上的文本模型**。**第三方中转站暂不兼容，请使用官方 API。**
+
+在“连接 AI”中填写服务地址、API 密钥和模型名称。服务地址应填写 API 地址，不能使用聊天网页的网址；密钥、地址和模型须对应同一服务。
+
+**火山方舟用户：** 请复制控制台提供的完整 Model ID，或该调用方式要求的接入点 ID，不要只填写“豆包”等展示名称。
+
+点击“测试并保存”会发送一次短字幕样例，可能产生少量费用。测试成功后，再开始 AI 推荐包装或分析字幕。
+
+> **小 tips：先充一两块，够试就好。**
+>
+> 钱包先别急着冲！如果平台支持小额充值，先充 1-2 元试试水就好。SC 做的是字幕文本分析，不是让 AI 看完整段视频，通常用不了多少 token。用完再添，别让余额先替你“加班”。实际花费取决于模型单价、字幕长度和分析次数。
+
+视频和音频留在本机；字幕及必要结构信息会发送到你连接的 AI 服务。“重新适配（本地）”会复用已有分析结果，不再调用模型；“重新分析（在线）”会再次调用并可能计费。
+
 ## 下载安装
 
 ### 直接使用：下载对应电脑的安装包
@@ -68,9 +90,11 @@
 
 | 你的电脑 | 对应安装包 |
 |---|---|
-| **Windows 64 位电脑** | `SC-Windows.zip` |
-| **Intel 芯片 Mac** | `SC-Mac-Intel.zip` |
-| **Apple 芯片 Mac，包括 M 系列** | `SC-Mac-AppleSilicon.zip` |
+| **Windows 11 · Intel / AMD x64** | [SC-Windows.zip](https://github.com/SupePotato/SmartCharacter/releases/latest/download/SC-Windows.zip) |
+| **Intel 芯片 Mac · macOS 14 或更高** | [SC-Mac-Intel.zip](https://github.com/SupePotato/SmartCharacter/releases/latest/download/SC-Mac-Intel.zip) |
+| **Apple 芯片 Mac（M 系列）· macOS 14 或更高** | [SC-Mac-AppleSilicon.zip](https://github.com/SupePotato/SmartCharacter/releases/latest/download/SC-Mac-AppleSilicon.zip) |
+
+Windows ARM（如骁龙）、32 位系统和 Windows 10 不在当前交付范围。
 
 ```text
 下载对应的 ZIP
@@ -90,9 +114,11 @@
 | **首次安装** | `安装 SmartCharacter.command` | `安装 SmartCharacter.cmd` |
 | **日常启动** | `启动 SmartCharacter.command` | `启动 SmartCharacter.cmd` |
 
+各平台安装包只保留本平台的安装和启动入口。请保留完整程序文件夹，不要只拖出这两个文件。
+
 > 以后使用时，直接点击“启动 SmartCharacter”，无需重复安装。使用期间请保持启动窗口运行。
 >
-> 安装、安全打开和故障处理的详细步骤见 **[本地启动说明](本地启动说明.md)**。
+> 安装、安全打开和故障处理的详细步骤，请先看下方对应平台的 **PDF 手册**。
 
 ### 安装与使用手册
 
@@ -100,11 +126,11 @@
 
 | 你的电脑 | 使用手册 |
 |---|---|
-| Windows x64 | [下载 PDF 手册](https://github.com/SupePotato/SmartCharacter/releases/download/untagged-c096b0550267ce178761/SC-Windows-Manual.pdf) |
-| Apple 芯片 Mac | [下载 PDF 手册](https://github.com/SupePotato/SmartCharacter/releases/download/untagged-c096b0550267ce178761/SC-Mac-AppleSilicon-Manual.pdf) |
-| Intel 芯片 Mac | [下载 PDF 手册](https://github.com/SupePotato/SmartCharacter/releases/download/untagged-c096b0550267ce178761/SC-Mac-Intel-Manual.pdf) |
+| Windows 11 · Intel / AMD x64 | [下载 PDF 手册](https://github.com/SupePotato/SmartCharacter/releases/latest/download/SC-Windows-Manual.pdf) |
+| Apple 芯片 Mac | [下载 PDF 手册](https://github.com/SupePotato/SmartCharacter/releases/latest/download/SC-Mac-AppleSilicon-Manual.pdf) |
+| Intel 芯片 Mac | [下载 PDF 手册](https://github.com/SupePotato/SmartCharacter/releases/latest/download/SC-Mac-Intel-Manual.pdf) |
 
-三份手册均放在当前 **SC 基础版的 Releases 附件**中，与三个 ZIP 安装包位于同一下载页。
+三份手册均放在最新 **SC 基础版的 Releases 附件**中，与三个 ZIP 安装包位于同一下载页。手册包含新版 AI 配置说明、充值小 tips 和各平台的导出路径。
 
 ### 自行构建：获取源码
 
